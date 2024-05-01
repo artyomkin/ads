@@ -1,6 +1,7 @@
 class Host:
-    def __init__(self, hostname, ip, ssh_user, ssh_password):
+    def __init__(self, hostname, ip, ssh_user, owner_username, id=None):
+        self.id = id
         self.hostname = hostname
         self.ip = ip
         self.ssh_user = ssh_user
-        self.ssh_password = ssh_password
+        self.owner_username = owner_username
