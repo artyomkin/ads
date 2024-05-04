@@ -1,6 +1,6 @@
 import sqlite3
 
-from DAO.UserDao import UserDao
+from DAO import UserDao
 import hashlib
 import logging
 

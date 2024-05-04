@@ -1,12 +1,33 @@
-import orm_sqlite
+import sys
 
-db = orm_sqlite.Database('example.db')
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-class HostDao(orm_sqlite.Model):
-    id = orm_sqlite.IntegerField(primary_key=True)
-    hostname = orm_sqlite.StringField()
-    ip = orm_sqlite.StringField()
-    ssh_user = orm_sqlite.StringField()
-    owner_username = orm_sqlite.StringField()
+from tableDeclaration import hosts, conn
+from sqlalchemy import select, text
+from entities.declaration import Host
+class HostDao:
+    @staticmethod
+    def save(*hostList):
+        hostsValues = [ "('{}', '{}', '{}', '{}')".format(
+            hostItem.hostname,
+            hostItem.owner_username,
+            hostItem.ip,
+            hostItem.ssh_user
+        ) for hostItem in hostList ]
+        statement = text(
+            "INSERT OR IGNORE INTO hosts VALUES {} returning hostname, owner_username".\
+            format(", ".join(hostsValues))
+        )
+        res = conn.execute(statement).fetchall()
+        conn.commit()
+        return res
 
-HostDao.objects.backend = db
+    @staticmethod
+    def exists(hostname, owner_username):
+        statement = select(hosts.c.hostname).where(
+            hosts.c.hostname == hostname,
+            hosts.c.owner_username == owner_username
+        )
+        existingHostname = conn.execute(statement).fetchone()
+        return existingHostname is not None
