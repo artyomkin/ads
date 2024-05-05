@@ -1,4 +1,4 @@
-from DAO import UserDao
+from DAO.UserDao import UserDao
 import hashlib
 import logging
 
@@ -6,15 +6,12 @@ logger = logging.getLogger(__name__)
 
 
 def authenticate(username, password):
-    existing_user = UserDao.objects.find(filter="username = '{}'".format(username))
-    if existing_user is None or len(existing_user) == 0:
+    existingUser = UserDao.findByUsername(username)
+    if existingUser is None:
         logger.info("User {} does not exist.".format(username))
         return False
 
-    # retrieve existing user from list
-    existing_user = existing_user[0]
-
-    if hashlib.sha512(password.encode('utf-8')).hexdigest() == existing_user['password']:
+    if hashlib.sha512(password.encode('utf-8')).hexdigest() == existingUser.password:
         logger.info("User {} successfully authenticated.".format(username))
         return True
 

@@ -1,26 +1,25 @@
 import sqlite3
 
-from DAO import UserDao
+from DAO.UserDao import UserDao
 import hashlib
 import logging
+from entities.declaration import User
 
 logger = logging.getLogger(__name__)
 
 
 def register(username, password):
-    if UserDao.exists():
-        existing_user = UserDao.objects.find("username = '{}'".format(username))
-        if existing_user is not None and len(existing_user) > 0:
-            logger.info("User {} already exists.".format(username))
-            return False
+    existingUser = UserDao.findByUsername(username)
+    if existingUser is not None:
+        logger.info("User {} already exists.".format(username))
+        return False
 
-    userDao = UserDao({
-        "username": username,
-        "password": hashlib.sha512(password.encode('utf-8')).hexdigest()
-    })
-    if userDao.save() == 1:
+    if UserDao.save(User(username, _encrypt(password))) == username:
         logger.info("User {} successfully registered.".format(username))
         return True
     else:
         logger.error("Could not register user {} because of unexpected error.".format(username))
         return False
+
+def _encrypt(password):
+    return hashlib.sha512(password.encode('utf-8')).hexdigest()
