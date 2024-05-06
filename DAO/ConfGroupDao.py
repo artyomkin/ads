@@ -5,10 +5,17 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 from ConfigurationDao import ConfigurationDao
 from DAO.tableDeclaration import confGroups, confToConfGroups, confGroupToConfGroups, conn
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 from entities.declaration import Configuration, ConfGroup
 
 class ConfGroupDao:
+    @staticmethod
+    def _getIdByNameAndOwnerUsername(name, ownerUsername):
+        findStatement = select(confGroups.c.id). \
+            select_from(confGroups). \
+            where(confGroups.c.name == name, confGroups.c.owner_username == ownerUsername)
+        confGroupId = conn.execute(findStatement).fetchone()[0]
+        return confGroupId
     @staticmethod
     def save(confGroup):
         # if conf group contains either configurations or configuration groups, raise exception
@@ -50,6 +57,91 @@ class ConfGroupDao:
         conn.commit()
 
         return confGroupId
+
+    @staticmethod
+    def exists(confGroupName, ownerUsername):
+        statement = confGroups.select().where(
+            confGroups.c.name == confGroupName,
+            confGroups.c.owner_username == ownerUsername
+        )
+        result = conn.execute(statement).fetchone()
+        return result
+
+    @staticmethod
+    def delete(name, ownerUsername):
+        statement = confGroups.delete().where(
+            confGroups.c.name == name,
+            confGroups.c.owner_username == ownerUsername
+        ).returning(
+            confGroups.c.name,
+            confGroups.c.owner_username
+        )
+        result = conn.execute(statement).fetchone()
+        conn.commit()
+        return result
+
+    @staticmethod
+    def addConfToGroup(confName, confGroupName, ownerUsername):
+        confGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(confGroupName, ownerUsername)
+        statement = confToConfGroups.insert().values(
+            conf_name = confName,
+            conf_owner_username = ownerUsername,
+            conf_group_id = confGroupId
+        ).returning(
+            confToConfGroups.c.conf_name,
+            confToConfGroups.c.conf_owner_username,
+            confToConfGroups.c.conf_group_id
+        )
+        res = conn.execute(statement).fetchone()
+        conn.commit()
+        return res
+
+    @staticmethod
+    def deleteConfFromGroup(confName, confGroupName, ownerUsername):
+        confGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(confGroupName, ownerUsername)
+        statement = confToConfGroups.delete().where(
+            confToConfGroups.c.conf_name == confName,
+            confToConfGroups.c.conf_owner_username == ownerUsername,
+            confToConfGroups.c.conf_group_id == confGroupId
+        ).returning(
+            confToConfGroups.c.conf_name,
+            confToConfGroups.c.conf_owner_username,
+            confToConfGroups.c.conf_group_id
+        )
+        res = conn.execute(statement).fetchone()
+        conn.commit()
+        return res
+
+    @staticmethod
+    def addConfGroupToConfGroup(childConfGroupName, parentConfGroupName, ownerUsername):
+        childConfGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(childConfGroupName, ownerUsername)
+        parentConfGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(parentConfGroupName, ownerUsername)
+        statement = confGroupToConfGroups.insert().values(
+            conf_group_child_id = childConfGroupId,
+            conf_group_parent_id = parentConfGroupId
+        ).returning(
+            confGroupToConfGroups.c.conf_group_child_id,
+            confGroupToConfGroups.c.conf_group_parent_id
+        )
+        res = conn.execute(statement).fetchone()
+        conn.commit()
+        return res
+
+    @staticmethod
+    def deleteConfGroupFromConfGroup(childConfGroupName, parentConfGroupName, ownerUsername):
+        childConfGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(childConfGroupName, ownerUsername)
+        parentConfGroupId = ConfGroupDao._getIdByNameAndOwnerUsername(parentConfGroupName, ownerUsername)
+        statement = confToConfGroups.delete().where(
+            confGroupToConfGroups.c.conf_group_child_id == childConfGroupId,
+            confGroupToConfGroups.c.conf_group_parent_id == parentConfGroupId
+        ).returning(
+            confGroupToConfGroups.c.conf_group_child_id,
+            confGroupToConfGroups.c.conf_group_parent_id
+        )
+        res = conn.execute(statement).fetchone()
+        conn.commit()
+        return res
+
 
 #conflist = [
 #    Configuration('1cg1', 'o'),

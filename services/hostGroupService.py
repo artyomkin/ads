@@ -24,9 +24,26 @@ def deleteHostGroup(name, owner_username):
     result = HostGroupDao.delete(name, owner_username)
     return result
 
-def addHostGroupToHostGroup(hostname, hostGroupName, owner_username):
-    if not HostDao.exists(hostname, owner_username) or not HostGroupDao.exists(hostGroupName, owner_username):
-        logger.info('Host {} and group {} of {} must exist'.format(hostname, hostGroupName, owner_username))
+def addHostGroupToHostGroup(childHostGroupName, parentHostGroupName, ownerUsername):
+    if not HostGroupDao.exists(childHostGroupName, ownerUsername) or not HostGroupDao.exists(parentHostGroupName, ownerUsername):
+        logger.info('Host groups {} and {} of {} must exist.'.format(childHostGroupName, parentHostGroupName, ownerUsername))
         return None
-    result = HostGroupDao.addHostToGroup(hostname, owner_username, hostGroupName)
-    return result
+
+    result = HostGroupDao.addHostGroupToHostGroup(childHostGroupName, parentHostGroupName, ownerUsername)
+    if result is not None or len(result) > 0:
+        return result
+
+    logger.info('Could not add host group {} to host group {} of {}.'.format(childHostGroupName, parentHostGroupName, ownerUsername))
+    return None
+
+def deleteHostGroupFromHostGroup(childHostGroupName, parentHostGroupName, ownerUsername):
+    if not HostGroupDao.exists(childHostGroupName, ownerUsername) or not HostGroupDao.exists(parentHostGroupName, ownerUsername):
+        logger.info('Host groups {} and {} of {} must exist.'.format(childHostGroupName, parentHostGroupName, ownerUsername))
+        return None
+
+    result = HostGroupDao.deleteHostGroupFromHostGroup(childHostGroupName, parentHostGroupName, ownerUsername)
+    if result is not None or len(result) > 0:
+        return result
+
+    logger.info('Could not delete host group {} from host group {} of {}.'.format(childHostGroupName, parentHostGroupName, ownerUsername))
+    return None

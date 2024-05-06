@@ -34,3 +34,12 @@ class UserDao:
         existingUser = conn.execute(statement)
         return existingUser is not None and len(existingUser) > 0
 
+    @staticmethod
+    def delete(username):
+        statement = users.\
+            delete().\
+            where(users.c.username == username).\
+            returning(users.c.username)
+        res = conn.execute(statement).fetchone()[0]
+        conn.commit()
+        return res

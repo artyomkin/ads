@@ -53,5 +53,10 @@ def deleteHostFromGroup(hostname, host_group_name, owner_username):
         logger.info("Hostgroup {} of {} does not exist.".format(host_group_name, owner_username))
         return None
 
-    Host
+    deleteRes = HostGroupDao.deleteHostFromGroup(hostname, host_group_name, owner_username)
+    if deleteRes is not None and len(deleteRes) > 0:
+        return deleteRes
+
+    logger.info("Could not delete host {} from host group {} of {}.".format(hostname, host_group_name, owner_username))
+    return None
 
