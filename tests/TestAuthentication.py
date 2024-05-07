@@ -1,6 +1,6 @@
 import unittest
 from services.registration import register
-from services.authentication import authenticate
+from services.authorization import authenticate
 class TestAuthentication(unittest.TestCase):
     def testAuthenticateExistingUser(self):
         username = 'existingUser'

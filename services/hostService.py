@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def createHost(hostname, owner_username, ip, ssh_user):
     if HostDao.exists(hostname, owner_username):
-        logger.info("Host {} of {} already exists".format(hostname, owner_username))
+        logger.info("Host {} of {} already exists.".format(hostname, owner_username))
         return None
 
     host = Host(hostname, owner_username, ip, ssh_user)
@@ -60,3 +60,5 @@ def deleteHostFromGroup(hostname, host_group_name, owner_username):
     logger.info("Could not delete host {} from host group {} of {}.".format(hostname, host_group_name, owner_username))
     return None
 
+def findHostsByOwner(username):
+    return HostDao.findByOwner(username)

@@ -3,12 +3,8 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-from HostDao import HostDao, UserDao
 from DAO.tableDeclaration import hostGroups, hostToHostGroups, hostGroupToHostGroups, conn
 from sqlalchemy import insert, select
-from entities.declaration import Host, HostGroup, User, Configuration, ConfGroup
-from ConfGroupDao import ConfGroupDao
-from ConfigurationDao import ConfigurationDao
 
 
 class HostGroupDao:

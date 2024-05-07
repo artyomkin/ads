@@ -1,11 +1,11 @@
 from DAO.UserDao import UserDao
+from DAO.HostDao import HostDao
 import hashlib
 import logging
 
 logger = logging.getLogger(__name__)
 
-
-def authenticate(username, password):
+def authorize(username, password):
     existingUser = UserDao.findByUsername(username)
     if existingUser is None:
         logger.info("User {} does not exist.".format(username))
@@ -17,3 +17,6 @@ def authenticate(username, password):
 
     logger.info("User {} is not authenticated.".format(username))
     return False
+
+def authorizeOnHost(hostname, username):
+    return HostDao.exists(hostname, username)

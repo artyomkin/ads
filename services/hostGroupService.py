@@ -14,6 +14,10 @@ def createHostGroup(name, owner_username, hosts=None, childrenHostGroups=None):
         logger.info('Only one of hosts or childrentHostGroups should be specified for host group {} of {}.'.format(name, owner_username))
         return None
 
+    if HostGroupDao.exists(name, owner_username):
+        logger.info('Host group {} of {} already exists.'.format(name, owner_username))
+        return None
+
     return HostGroupDao.save(hostGroup)
 
 

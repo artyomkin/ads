@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 arguments = sum([ arg.split('=') for arg in sys.argv ], [])
+#arguments = ['entrypoint.py', 'host-delete', '--username', 'o', '--password', 'p', 'hello']
 if len(arguments) < 2:
     logging.error('At least 2 arguments myst be specified.')
     exit(1)

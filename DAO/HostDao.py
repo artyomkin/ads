@@ -3,7 +3,7 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-from tableDeclaration import hosts, conn
+from DAO.tableDeclaration import hosts, conn
 from sqlalchemy import select, text
 from entities.declaration import Host, User
 from DAO.UserDao import UserDao
@@ -43,3 +43,10 @@ class HostDao:
         conn.commit()
         return deleteResult
 
+    @staticmethod
+    def findByOwner(username):
+        statement = hosts.select().where(
+            hosts.c.owner_username == username
+        )
+        result = conn.execute(statement).fetchall()
+        return result
