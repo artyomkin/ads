@@ -3,10 +3,8 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-from ConfigurationDao import ConfigurationDao
 from DAO.tableDeclaration import confGroups, confToConfGroups, confGroupToConfGroups, conn
 from sqlalchemy import insert, select
-from entities.declaration import Configuration, ConfGroup
 
 class ConfGroupDao:
     @staticmethod
@@ -14,8 +12,10 @@ class ConfGroupDao:
         findStatement = select(confGroups.c.id). \
             select_from(confGroups). \
             where(confGroups.c.name == name, confGroups.c.owner_username == ownerUsername)
-        confGroupId = conn.execute(findStatement).fetchone()[0]
-        return confGroupId
+        res = conn.execute(findStatement).fetchone()
+        if res is not None and len(res) > 0:
+            return res[0]
+        return None
     @staticmethod
     def save(confGroup):
         # if conf group contains either configurations or configuration groups, raise exception
@@ -141,6 +141,54 @@ class ConfGroupDao:
         res = conn.execute(statement).fetchone()
         conn.commit()
         return res
+
+    @staticmethod
+    def find(name, username):
+        statement = confGroups.select().where(
+            confGroups.c.owner_username == username,
+            confGroups.c.name == name
+        )
+        result = conn.execute(statement).fetchone()
+        return result
+
+
+    @staticmethod
+    def findByOwner(username):
+        statement = confGroups.select().where(
+            confGroups.c.owner_username == username
+        )
+        result = '\n'.join([ confGroup.name for confGroup in conn.execute(statement).fetchall() ])
+        return result
+
+    @staticmethod
+    def findParents(childId):
+        statement = confGroupToConfGroups.select().where(
+            confGroupToConfGroups.c.conf_group_child_id == childId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [ item[1] for item in res ]
+        return None
+
+    @staticmethod
+    def findChildren(parentId):
+        statement = confGroupToConfGroups.select().where(
+            confGroupToConfGroups.c.conf_group_parent_id == parentId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [item[0] for item in res]
+        return None
+
+    @staticmethod
+    def findConfs(groupId):
+        statement = confToConfGroups.select().where(
+            confToConfGroups.c.conf_group_id == groupId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [(item[0], item[1]) for item in res]
+        return None
 
 
 #conflist = [

@@ -16,7 +16,7 @@ def register(username, password):
 
     if UserDao.save(User(username, _encrypt(password))) == username:
         logger.info("User {} successfully registered.".format(username))
-        return True
+        return username
     else:
         logger.error("Could not register user {} because of unexpected error.".format(username))
         return False

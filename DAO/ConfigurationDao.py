@@ -3,9 +3,8 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-from tableDeclaration import configurations, conn
+from DAO.tableDeclaration import configurations, conn
 from sqlalchemy import text
-from entities.declaration import Configuration
 
 class ConfigurationDao:
 
@@ -45,3 +44,21 @@ class ConfigurationDao:
         res = conn.execute(statement).fetchone()
         conn.commit()
         return res
+
+    @staticmethod
+    def findByOwner(username):
+        statement = configurations.select().where(
+            configurations.c.owner_username == username
+        )
+        result = conn.execute(statement).fetchall()
+        return result
+
+    @staticmethod
+    def find(name, username):
+        statement = configurations.select().where(
+            configurations.c.owner_username == username,
+            configurations.c.name == name
+        )
+        result = conn.execute(statement).fetchone()
+        return result
+

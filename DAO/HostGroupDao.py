@@ -11,11 +11,12 @@ class HostGroupDao:
 
     @staticmethod
     def _getIdByNameAndOwnerUsername(hostGroupName, ownerUsername):
-        findStatement = select(hostGroups.c.id). \
-            select_from(hostGroups). \
+        findStatement = hostGroups.select(). \
             where(hostGroups.c.name == hostGroupName, hostGroups.c.owner_username == ownerUsername)
-        hostGroupId = conn.execute(findStatement).fetchone()[0]
-        return hostGroupId
+        res = conn.execute(findStatement).fetchone()
+        if res is not None and len(res) > 0:
+            return res[0]
+        return None
 
     @staticmethod
     def save(hostGroup):
@@ -133,7 +134,7 @@ class HostGroupDao:
         return res is not None and len(res) > 0
 
     @staticmethod
-    def exists(name, owner_username):
+    def existsByNameAndUsername(name, owner_username):
         statement = hostGroups.select().where(hostGroups.c.name == name, hostGroups.c.owner_username == owner_username)
         res = conn.execute(statement).fetchone()
         return res is not None and len(res) > 0
@@ -148,7 +149,52 @@ class HostGroupDao:
         conn.commit()
         return result
 
+    @staticmethod
+    def findByOwner(username):
+        statement = hostGroups.select().where(
+            hostGroups.c.owner_username == username
+        )
+        result = '\n'.join([ hostGroup.name for hostGroup in conn.execute(statement).fetchall() ])
+        return result
 
+    @staticmethod
+    def find(name, username):
+        statement = hostGroups.select().where(
+            hostGroups.c.owner_username == username,
+            hostGroups.c.name == name
+        )
+        result = conn.execute(statement).fetchone()
+        return result
+
+    @staticmethod
+    def findParents(childId):
+        statement = hostGroupToHostGroups.select().where(
+            hostGroupToHostGroups.c.host_group_child_id == childId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [ item[1] for item in res ]
+        return None
+
+    @staticmethod
+    def findChildren(parentId):
+        statement = hostGroupToHostGroups.select().where(
+            hostGroupToHostGroups.c.host_group_parent_id == parentId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [item[0] for item in res]
+        return None
+
+    @staticmethod
+    def findHosts(groupId):
+        statement = hostToHostGroups.select().where(
+            hostToHostGroups.c.host_group_id == groupId
+        )
+        res = conn.execute(statement).fetchall()
+        if res is not None:
+            return [(item[0], item[1]) for item in res]
+        return None
 #hostlist = [
 #    Host('1hg1', 'oo', 'i','s'),
 #    Host('2hg1', 'oo', 'i', 's'),

@@ -50,3 +50,12 @@ class HostDao:
         )
         result = conn.execute(statement).fetchall()
         return result
+
+    @staticmethod
+    def find(hostname, username):
+        statement = hosts.select().where(
+            hosts.c.owner_username == username,
+            hosts.c.hostname == hostname
+        )
+        result = conn.execute(statement).fetchone()
+        return result

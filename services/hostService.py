@@ -34,7 +34,7 @@ def addHostToGroup(hostname, host_group_name, owner_username):
         logger.info("Host {} of {} does not exist.".format(hostname, owner_username))
         return None
 
-    if HostGroupDao.exists(host_group_name, owner_username):
+    if HostGroupDao.existsByNameAndUsername(host_group_name, owner_username):
         result = HostGroupDao.addHostToGroup(hostname, owner_username, host_group_name)
         if result is not None and len(result) > 0:
             logger.info("Host {} of {} successfully added to host group {}.".format(hostname, owner_username, host_group_name))

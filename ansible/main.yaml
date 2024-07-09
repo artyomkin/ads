@@ -1,0 +1,11 @@
+- name: main
+  hosts: all
+  tasks:
+
+    - name: include roles
+      loop: "{{ _roles.split(',') }}"
+      loop_control:
+        loop_var: role
+      include_role:
+        name: "{{ role }}"
+        allow_duplicates: no

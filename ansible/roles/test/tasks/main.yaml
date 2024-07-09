@@ -1,0 +1,8 @@
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - ca-certificates
